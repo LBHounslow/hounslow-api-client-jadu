@@ -3,7 +3,6 @@
 namespace Tests\Unit\Client;
 
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\InvalidArgumentException as GuzzleInvalidArgumentException;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use Hounslow\ApiClient\Client\Client as ApiClient;
 use Hounslow\ApiClient\Entity\AccessToken;
@@ -60,7 +59,7 @@ class ClientTest extends ApiClientTestCase
     {
         $this->mockGuzzleClient
             ->method('post')
-            ->willThrowException(new GuzzleInvalidArgumentException('Guzzle error'));
+            ->willThrowException(new \InvalidArgumentException('Guzzle error'));
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Guzzle error');
         $this->apiClient->post('/api/endpoint');
@@ -122,7 +121,7 @@ class ClientTest extends ApiClientTestCase
     {
         $this->mockGuzzleClient
             ->method('get')
-            ->willThrowException(new GuzzleInvalidArgumentException('Guzzle error'));
+            ->willThrowException(new \InvalidArgumentException('Guzzle error'));
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Guzzle error');
         $this->apiClient->get('/api/endpoint');
@@ -192,7 +191,7 @@ class ClientTest extends ApiClientTestCase
     {
         $this->mockGuzzleClient
             ->method('post')
-            ->willThrowException(new GuzzleInvalidArgumentException('Guzzle error'));
+            ->willThrowException(new \InvalidArgumentException('Guzzle error'));
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Guzzle error');
         $this->apiClient->requestAccessToken();
