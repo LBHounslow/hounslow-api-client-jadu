@@ -1,6 +1,8 @@
-## Hounslow API Client
+## Hounslow API Client for Jadu.net
 
-This is a lightweight API client for the Hounslow API and can be installed into any PHP project using composer.
+London Borough of Hounslow API Client specifically for use by [Jadu.net](www.jadu.net)
+
+This version of the client ensures compatibility with the current build of Jadu used by LB Hounslow.
 
 See [example.php](example.php) for usage.
 

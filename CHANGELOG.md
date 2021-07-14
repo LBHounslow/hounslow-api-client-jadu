@@ -2,25 +2,6 @@
 
 ## Changelog
 
-### Stable release v0.2 `19/04/2020`
+### Release v0.1 `14/07/2021`
 
-Features:
-  - Updated the clients `Session` class to implement `ArrayAccess` and `SessionInterface` so a custom session class could be used with `setSession`.
-  - Improved unit test coverage for `Client` and improved test coverage in general (`35 tests, 97 assertions`). Also added `phpunit.xml.dist`
-  - Changed `AccessToken` to use seconds rather than minutes.
-  - Updated `ApiResponse` to work with the standardized Hounslow API response ie. `{"success":true,"payload":[]}`
-  - Added `logError` client method with validation (using `MonologEnum`) for monolog levels.
-
-[view changes](https://github.com/LBHounslow/hounslow-api-client/compare/v0.1...v0.2)
-
-Fixes:
-  - Added session key in `getBearerToken` based on users credentials and client. 
-  - Fixed bug with
-
-[view changes](https://github.com/LBHounslow/hounslow-api-client/compare/v0.1...v0.2)
-
-### Beta release v0.1 `13/04/2020`
-
-Features:
-  - Added initial verison of client.
-  - Added unit test coverage for most classes.
+This is the first release. It is based on the [v0.4 release](https://github.com/LBHounslow/hounslow-api-client/releases/tag/v0.4) of the [Hounslow API Client](https://github.com/LBHounslow/hounslow-api-client) which was a specific release for Jadu compatibility. Going forward this will be the Jadu specific version of the Hounslow API Client. 
