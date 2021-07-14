@@ -1,6 +1,6 @@
 ## Hounslow API Client for Jadu.net
 
-London Borough of Hounslow API Client specifically for use by [Jadu.net](www.jadu.net)
+London Borough of Hounslow API Client specifically for use by [Jadu.net](https://www.jadu.net)
 
 This version of the client ensures compatibility with the current build of Jadu used by LB Hounslow.
 
