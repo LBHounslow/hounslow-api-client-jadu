@@ -1,6 +1,6 @@
 {
-  "name": "lb-hounslow/hounslow-api-client",
-  "description": "An interface for the Hounslow API",
+  "name": "lb-hounslow/hounslow-api-client-jadu",
+  "description": "An interface for the Hounslow API for use by Jadu.net",
   "type": "library",
   "license": "proprietary",
   "require": {
