@@ -10,7 +10,6 @@ use Hounslow\ApiClient\Enum\HttpStatusCodeEnum;
 use Hounslow\ApiClient\Enum\MonologEnum;
 use Hounslow\ApiClient\Exception\ApiException;
 use Hounslow\ApiClient\Response\ApiResponse;
-use Hounslow\ApiClient\Session\Session;
 use PHPUnit\Framework\MockObject\MockObject;
 use Tests\Unit\ApiClientTestCase;
 
@@ -26,25 +25,26 @@ class ClientTest extends ApiClientTestCase
      */
     private $mockGuzzleClient;
 
-    /**
-     * @var Session|MockObject
-     */
-    private $mockSession;
-
     public function setUp(): void
     {
         $this->mockGuzzleClient = $this->getMockBuilder(GuzzleClient::class)
             ->addMethods(['post', 'get'])
             ->getMock();
-        $this->mockSession = $this->createMock(Session::class);
-        $this->apiClient = $this->createPartialMock(ApiClient::class, ['getBearerToken']);
+        $this->apiClient = $this->createPartialMock(ApiClient::class, ['getAccessToken']);
         $this->apiClient
             ->setGuzzleClient($this->mockGuzzleClient)
             ->setUsername(self::USERNAME)
             ->setPassword(self::PASSWORD);
         $this->apiClient
-            ->method('getBearerToken')
-            ->willReturn(self::ACCESS_TOKEN);
+            ->method('getAccessToken')
+            ->willReturn((new AccessToken())->hydrate(
+                [
+                    'expires_in' => 3600, 
+                    'access_token' => self::ACCESS_TOKEN,
+                    'token_type' => self::BEARER,
+                    'refresh_token' => self::REFRESH_TOKEN
+                ]
+            ));
         parent::setUp();
     }
 
@@ -63,30 +63,6 @@ class ClientTest extends ApiClientTestCase
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Guzzle error');
         $this->apiClient->post('/api/endpoint');
-    }
-
-    /**
-     * @param mixed $response
-     * @dataProvider invalidPostResponseDataProvider
-     */
-    public function testPostMethodHandlesInvalidResponses($response)
-    {
-        $this->expectException(ApiException::class);
-        $this->expectExceptionMessage('Unrecognised response from API');
-        $this->mockGuzzleClient
-            ->method('post')
-            ->willReturn($response);
-        $this->apiClient->post('/api/endpoint');
-    }
-
-    public function invalidPostResponseDataProvider()
-    {
-        return [
-            [null],
-            [new \stdClass()],
-            [self::RANDOM_ERROR_STRING],
-            [123]
-        ];
     }
 
     /**
@@ -128,30 +104,6 @@ class ClientTest extends ApiClientTestCase
     }
 
     /**
-     * @param mixed $response
-     * @dataProvider invalidGetResponseDataProvider
-     */
-    public function testGetMethodHandlesInvalidResponses($response)
-    {
-        $this->expectException(ApiException::class);
-        $this->expectExceptionMessage('Unrecognised response from API');
-        $this->mockGuzzleClient
-            ->method('get')
-            ->willReturn($response);
-        $this->apiClient->get('/api/endpoint');
-    }
-
-    public function invalidGetResponseDataProvider()
-    {
-        return [
-            [null],
-            [new \stdClass()],
-            [self::RANDOM_ERROR_STRING],
-            [123]
-        ];
-    }
-
-    /**
      * @param GuzzleResponse $response
      * @param bool $isSuccessful
      * @param array $expectedPayload
@@ -183,8 +135,9 @@ class ClientTest extends ApiClientTestCase
     {
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Username and Password must be set');
-        $this->apiClient->setUsername('')->setPassword('');
-        $this->apiClient->requestAccessToken();
+        $apiClient = $this->createPartialMock(ApiClient::class, []);
+        $apiClient->setUsername('')->setPassword('');
+        $apiClient->getAccessToken();
     }
 
     public function testRequestAccessTokenHandlesGuzzleException()
@@ -194,31 +147,11 @@ class ClientTest extends ApiClientTestCase
             ->willThrowException(new \InvalidArgumentException('Guzzle error'));
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Guzzle error');
-        $this->apiClient->requestAccessToken();
-    }
-
-    /**
-     * @param mixed $response
-     * @dataProvider invalidRequestAccessTokenDataProvider
-     */
-    public function testRequestAccessTokenHandlesInvalidResponses($response)
-    {
-        $this->expectException(ApiException::class);
-        $this->expectExceptionMessage('Unrecognised response from API');
-        $this->mockGuzzleClient
-            ->method('post')
-            ->willReturn($response);
-        $this->apiClient->requestAccessToken();
-    }
-
-    public function invalidRequestAccessTokenDataProvider()
-    {
-        return [
-            [null],
-            [new \stdClass()],
-            [self::RANDOM_ERROR_STRING],
-            [123]
-        ];
+        $apiClient = $this->createPartialMock(ApiClient::class, []);
+        $apiClient->setGuzzleClient($this->mockGuzzleClient)
+            ->setUsername(self::USERNAME)
+            ->setPassword(self::PASSWORD);
+        $apiClient->getAccessToken();
     }
 
     public function testItReturnsAnAccessTokenForAValidResponse()
@@ -227,13 +160,33 @@ class ClientTest extends ApiClientTestCase
             ->method('post')
             ->willReturn(new GuzzleResponse(HttpStatusCodeEnum::OK, [], self::ACCESS_TOKEN_RESPONSE_JSON));
 
-        $result = $this->apiClient->requestAccessToken();
+        $result = $this->apiClient->getAccessToken();
 
         $this->assertInstanceOf(AccessToken::class, $result);
         $this->assertEquals(self::BEARER, $result->getType());
         $this->assertEquals(self::ACCESS_TOKEN, $result->getToken());
         $this->assertEquals(self::REFRESH_TOKEN, $result->getRefreshToken());
         $this->assertInstanceOf(\DateTimeImmutable::class, $result->getExpiry());
+    }
+
+    public function testItStoresInvalidResponseBodyInApiExceptionForUnexpectedResponse()
+    {
+        $this->mockGuzzleClient
+            ->method('post')
+            ->willReturn(new GuzzleResponse(HttpStatusCodeEnum::OK, [], self::INVALID_JSON));
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('Unexpected response, access_token not found');
+
+        $apiClient = $this->createPartialMock(ApiClient::class, []);
+        $apiClient->setGuzzleClient($this->mockGuzzleClient)
+            ->setUsername(self::USERNAME)
+            ->setPassword(self::PASSWORD)
+            ->getAccessToken();
+
+        /** @var ApiException $apiException */
+        $apiException = $this->getExpectedException();
+        $this->assertEquals($apiException->getResponseBody(), self::INVALID_JSON);
     }
 
     public function testLogErrorFailsWithInvalidMonologLevel()
