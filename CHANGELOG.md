@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### Release v0.3 `04/06/2024`
+
+Update required to Guzzle version so that it is compatible with Jadu core.
+
 ### Release v0.2 `15/07/2021`
 
 This change is so that we have more visibility over the request to fetch an accessToken and the Guzzle response body of that request.
