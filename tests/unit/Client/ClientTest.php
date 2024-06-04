@@ -28,7 +28,7 @@ class ClientTest extends ApiClientTestCase
     public function setUp(): void
     {
         $this->mockGuzzleClient = $this->getMockBuilder(GuzzleClient::class)
-            ->addMethods(['post', 'get'])
+            ->onlyMethods(['post', 'get'])
             ->getMock();
         $this->apiClient = $this->createPartialMock(ApiClient::class, ['getAccessToken']);
         $this->apiClient
