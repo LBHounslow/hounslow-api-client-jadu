@@ -2,9 +2,13 @@
 
 ## Changelog
 
-### Release v0.3 `04/06/2024`
+### Release v0.4 `04/06/2024`
 
 Update required to Guzzle version so that it is compatible with Jadu core.
+
+### Release v0.3 `05/11/2021`
+
+Changed namespace from Hounslow to LBHounslow.
 
 ### Release v0.2 `15/07/2021`
 
